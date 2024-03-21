@@ -34,7 +34,7 @@ def get_restaurants():
 
 @app.route('/restaurants/<int:id>', methods=['GET'])
 def get_restaurant_by_id(id):
-    restaurant = Restaurant.query.get(id)
+    restaurant = restaurant = Restaurant.query.get_or_404(id)
     if restaurant:
         return jsonify(restaurant.serialize_with_pizzas()), 200
     else:
@@ -43,9 +43,11 @@ def get_restaurant_by_id(id):
 
 @app.route('/restaurants/<int:id>', methods=['DELETE'])
 def delete_restaurant(id):
-    """Delete restaurant by ID."""
+    """Delete a restaurant and all associated restaurant_pizzas"""
     restaurant = Restaurant.query.get(id)
     if restaurant:
+        for rp in restaurant.restaurant_pizzas:
+            db.session.delete(rp)
         db.session.delete(restaurant)
         db.session.commit()
         return '', 204
